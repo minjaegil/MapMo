@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mapmo/features/list/list_screen.dart';
 
 import 'package:mapmo/features/map/map_screen.dart';
 
@@ -10,8 +11,7 @@ class MainNavigationScreen extends StatefulWidget {
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen>
-    with SingleTickerProviderStateMixin {
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
 
   void _onTap(int index) {
@@ -24,14 +24,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        /* title: const CupertinoSearchTextField(
-          backgroundColor: Colors.white,
-        ), */
-      ),
       body: Stack(
         children: [
           Offstage(
@@ -40,7 +32,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
           ),
           Offstage(
             offstage: _selectedIndex != 1,
-            child: const Scaffold(),
+            child: const ListScreen(),
           ),
         ],
       ),
@@ -58,6 +50,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
             topRight: Radius.circular(24),
           ),
           child: BottomNavigationBar(
+            backgroundColor: Colors.white,
             selectedItemColor: Theme.of(context).primaryColor,
             onTap: _onTap,
             currentIndex: _selectedIndex,

@@ -15,7 +15,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
         theme: ThemeData(
-          scaffoldBackgroundColor: Colors.transparent,
+          scaffoldBackgroundColor: Colors.white,
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           primaryColor: const Color.fromRGBO(157, 194, 9, 1.0),
