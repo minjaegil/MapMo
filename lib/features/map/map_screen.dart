@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mapmo/constants/sizes.dart';
 import 'package:mapmo/features/map/widgets/add_button.dart';
+import 'package:mapmo/features/map/widgets/tag_chips.dart';
+import 'package:modal_side_sheet/modal_side_sheet.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -22,6 +23,15 @@ class _MapScreenState extends State<MapScreen> {
     mapController = controller;
   }
 
+  void _onMenuTap(BuildContext context) async {
+    await showModalSideSheet(
+      context: context,
+      body: const Scaffold(),
+      barrierDismissible: true,
+      withCloseControll: false,
+    );
+  }
+
   @override
   void dispose() {
     _textEditingController.dispose();
@@ -35,28 +45,35 @@ class _MapScreenState extends State<MapScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Sizes.size14,
-            vertical: Sizes.size10,
+        title: TextField(
+          style: TextStyle(
+            color: Colors.grey.withOpacity(0.5),
           ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(Sizes.size16),
-          ),
-          child: TextField(
-            style: TextStyle(
-              color: Colors.grey.withOpacity(0.5),
+          controller: _textEditingController,
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.all(16),
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.0),
             ),
-            controller: _textEditingController,
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              suffixIcon: FaIcon(FontAwesomeIcons.magnifyingGlass),
+            suffixIcon: const Icon(
+              Icons.search,
+              size: Sizes.size28,
+            ),
+            icon: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.menu,
+                  color: Colors.black,
+                ),
+                onPressed: () => _onMenuTap(context),
+              ),
             ),
           ),
         ),
       ),
-      //backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           GoogleMap(
@@ -72,24 +89,18 @@ class _MapScreenState extends State<MapScreen> {
             child: AddButton(),
           ),
           SafeArea(
-            child: SizedBox(
-              height: 60,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  FilterChip(
-                    label: const Text("hi"),
-                    onSelected: (value) => () {},
-                  ),
-                  FilterChip(
-                    label: const Text("hi"),
-                    onSelected: (value) => () {},
-                  ),
-                  FilterChip(
-                    label: const Text("hi"),
-                    onSelected: (value) => () {},
-                  ),
-                ],
+            child: Padding(
+              padding: const EdgeInsets.only(left: Sizes.size18),
+              child: SizedBox(
+                height: 60,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: const [
+                    TagChips(),
+                    TagChips(),
+                    TagChips(),
+                  ],
+                ),
               ),
             ),
           ),

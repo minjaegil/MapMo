@@ -38,7 +38,8 @@ dependencies:
   google_maps_flutter: ^2.2.4
   google_maps_flutter_web: ^0.4.0+6
   font_awesome_flutter: ^10.4.0
-  convex_bottom_bar: ^3.2.0
+
+  modal_side_sheet: ^0.0.1
 
 dev_dependencies:
   flutter_test:
