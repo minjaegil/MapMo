@@ -19,8 +19,11 @@ class _MapScreenState extends State<MapScreen> {
 
   final LatLng _center = const LatLng(45.521563, -122.677433);
 
-  void _onMapCreated(GoogleMapController controller) {
+  void _onMapCreated(GoogleMapController controller) async {
     mapController = controller;
+    String value = await DefaultAssetBundle.of(context)
+        .loadString('assets/map_style.json');
+    mapController.setMapStyle(value);
   }
 
   void _onMenuTap(BuildContext context) async {
@@ -78,6 +81,7 @@ class _MapScreenState extends State<MapScreen> {
         children: [
           GoogleMap(
             onMapCreated: _onMapCreated,
+            myLocationEnabled: true,
             initialCameraPosition: CameraPosition(
               target: _center,
               zoom: 11.0,

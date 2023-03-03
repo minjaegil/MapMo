@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mapmo/features/map/widgets/memo_template.dart';
 
 class AddButton extends StatefulWidget {
   const AddButton({super.key});
@@ -9,16 +10,12 @@ class AddButton extends StatefulWidget {
 }
 
 class _AddButtonState extends State<AddButton> {
-  void _onPlusTap() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('Add record'),
-          ),
-        ),
-        fullscreenDialog: true,
-      ),
+  void _onPlusTap() async {
+    await showModalBottomSheet(
+      isScrollControlled: true, // bottom sheet의 사이즈를 조절할 수 있게해줌.
+      backgroundColor: Colors.transparent,
+      context: context,
+      builder: (context) => const MemoTemplate(),
     );
   }
 
