@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:mapmo/features/map/widgets/memo_template.dart';
+import 'package:mapmo/constants/sizes.dart';
+import 'package:mapmo/features/memo/memo_template.dart';
 
 class AddButton extends StatefulWidget {
   const AddButton({super.key});
@@ -21,24 +21,13 @@ class _AddButtonState extends State<AddButton> {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return FloatingActionButton(
       onPressed: () => _onPlusTap(),
-      style: ButtonStyle(
-        shape: MaterialStateProperty.all(
-          const CircleBorder(),
-        ),
-        padding: MaterialStateProperty.all(const EdgeInsets.all(20)),
-        backgroundColor:
-            MaterialStateProperty.all(Theme.of(context).primaryColor),
-        overlayColor: MaterialStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(MaterialState.pressed)) {
-            return Colors.green;
-          }
-          return null;
-        }),
-      ),
-      child: const FaIcon(
-        FontAwesomeIcons.plus,
+      backgroundColor: Colors.white,
+      child: Icon(
+        Icons.add_location_alt_outlined,
+        color: Theme.of(context).primaryColor,
+        size: Sizes.size28,
       ),
     );
   }
