@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mapmo/constants/sizes.dart';
 import 'package:mapmo/features/main_navigation/main_navigation_screen.dart';
 
 void main() => runApp(const MyApp());
@@ -19,7 +20,16 @@ class _MyAppState extends State<MyApp> {
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           primaryColor: const Color.fromRGBO(157, 194, 9, 1.0),
-
+          appBarTheme: const AppBarTheme(
+            foregroundColor: Colors.black,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            titleTextStyle: TextStyle(
+              color: Colors.black,
+              fontSize: Sizes.size18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           //colorSchemeSeed: Colors.green[700],
         ),
         home: const MainNavigationScreen());

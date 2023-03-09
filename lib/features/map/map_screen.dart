@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
 import 'package:mapmo/features/drawer/drawer_screen.dart';
 import 'package:mapmo/features/map/widgets/add_button.dart';
+import 'package:mapmo/features/map/widgets/tag_model.dart';
 
 import 'package:side_sheet/side_sheet.dart';
 
@@ -16,29 +16,24 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  late GoogleMapController mapController;
+  late GoogleMapController _mapController;
   final TextEditingController _textEditingController = TextEditingController();
 
   final LatLng _center = const LatLng(45.521563, -122.677433);
 
-  bool _filtercheck = false;
-
-  void _onChipTap(bool isChecked) {
-    if (isChecked) {
-      print("check");
-    } else {
-      print("bye");
-    }
-    setState(() {
-      _filtercheck = isChecked;
-    });
-  }
+  final List<TagModel> _chipsList = [
+    TagModel("Android", Colors.green, false),
+    TagModel("Flutter", Colors.blueGrey, false),
+    TagModel("Ios", Colors.deepOrange, false),
+    TagModel("Python", Colors.cyan, false),
+    TagModel("React JS", Colors.teal, false),
+  ];
 
   void _onMapCreated(GoogleMapController controller) async {
-    mapController = controller;
+    _mapController = controller;
     String value = await DefaultAssetBundle.of(context)
         .loadString('assets/map_style.json');
-    mapController.setMapStyle(value);
+    _mapController.setMapStyle(value);
   }
 
   void _onMenuTap(BuildContext context) async {
@@ -54,12 +49,14 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void dispose() {
     _textEditingController.dispose();
+    _mapController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -70,8 +67,8 @@ class _MapScreenState extends State<MapScreen> {
           padding: const EdgeInsets.only(
             left: Sizes.size12,
             right: Sizes.size6,
-            top: Sizes.size3,
-            bottom: Sizes.size3,
+            top: Sizes.size5,
+            bottom: Sizes.size5,
           ),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -98,10 +95,11 @@ class _MapScreenState extends State<MapScreen> {
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.all(16),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: Colors.grey.shade200,
                     hintText: "Search places here",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30.0),
+                      borderSide: BorderSide.none,
                     ),
                     suffixIcon: const Icon(
                       Icons.search,
@@ -135,18 +133,21 @@ class _MapScreenState extends State<MapScreen> {
               child: SizedBox(
                 height: 60,
                 child: ListView.separated(
-                  itemCount: 10,
-                  separatorBuilder: (context, index) => Gaps.h8,
+                  itemCount: _chipsList.length,
+                  separatorBuilder: (context, index) => Gaps.h7,
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context, index) {
                     return FilterChip(
-                      selected: _filtercheck,
-                      label: const Text("golf"),
-                      avatar: const FaIcon(
-                        FontAwesomeIcons.golfBallTee,
-                        size: Sizes.size18,
-                      ),
-                      onSelected: (value) => _onChipTap(value),
+                      elevation: 1,
+                      backgroundColor: Colors.white,
+                      showCheckmark: false,
+                      selectedColor: _chipsList[index].color.withOpacity(0.9),
+                      selected: _chipsList[index].isSelected,
+                      label: Text(_chipsList[index].label),
+                      side: BorderSide(color: _chipsList[index].color),
+                      onSelected: (value) => setState(() {
+                        _chipsList[index].isSelected = value;
+                      }),
                     );
                   },
                 ),

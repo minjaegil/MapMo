@@ -23,6 +23,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBody: true,
       body: Stack(
         children: [
@@ -57,11 +58,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             items: const [
               BottomNavigationBarItem(
                 icon: FaIcon(FontAwesomeIcons.map),
-                label: "Map",
+                label: "지도",
               ),
               BottomNavigationBarItem(
                 icon: FaIcon(FontAwesomeIcons.list),
-                label: "List",
+                label: "모아보기",
               ),
             ],
           ),
