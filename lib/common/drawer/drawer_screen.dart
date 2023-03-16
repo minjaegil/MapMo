@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
+import 'package:mapmo/models/saved_maps.dart';
 
 class DrawerScreen extends StatelessWidget {
-  const DrawerScreen({super.key});
+  final SavedMaps mapsList;
+
+  const DrawerScreen({
+    super.key,
+    required this.mapsList,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,18 +46,23 @@ class DrawerScreen extends StatelessWidget {
             ),
             Gaps.v14,
             Expanded(
-              child: ListView(
-                children: [
-                  ListTile(
+              child: ListView.separated(
+                itemCount: mapsList.savedMaps.length,
+                separatorBuilder: (context, index) => const Divider(
+                  height: 0.5,
+                  thickness: 0.5,
+                ),
+                itemBuilder: (context, index) {
+                  return ListTile(
                     onTap: () {},
-                    //selected: true,
-                    //selectedTileColor: Theme.of(context).primaryColor,
+                    selected: index == mapsList.currentIndex,
+                    selectedColor: Theme.of(context).primaryColor,
                     leading: const Icon(Icons.map_outlined),
-                    title: const Text(
-                      'Activityakndf;kalwenf;klnwaekl;fn;qekwlnflkqnfklqnewlk;fnqlkewnflkeqwnflk;qenwf;klnqw;lkfenqlekf;qlnlkwe',
+                    title: Text(
+                      mapsList.savedMaps[index].mapName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -60,8 +71,8 @@ class DrawerScreen extends StatelessWidget {
                       Icons.more_horiz,
                       color: Colors.black,
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ],

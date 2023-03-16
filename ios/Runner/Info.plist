@@ -6,8 +6,11 @@
 	<string>Needed for camera usage</string> -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Needed for photo library usage</string>
-	<!-- <key>NSMicrophoneUsageDescription</key>
-	<string>Needed for microphone usage</string> -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to location when open.</string>
+	<!-- <key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs access to location when in the background.</string> -->
+	
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
