@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mapmo/common/drawer/drawer_screen.dart';
 import 'package:mapmo/common/place_search/place_search_screen.dart';
+import 'package:mapmo/features/map/widgets/zoom_button.dart';
 import 'package:mapmo/features/memo/memo_template.dart';
+import 'package:mapmo/models/place_model.dart';
 import 'package:mapmo/models/saved_maps.dart';
 
 //import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -60,7 +63,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       setState(() {
         _currentPosition = LatLng(position.latitude, position.longitude);
         _animatedMapMove(_currentPosition, _mapController.zoom);
-        print(passedGeofeature?.placeName);
       });
     }).catchError((e) {
       debugPrint(e);
@@ -68,6 +70,18 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   void _animatedMapMove(LatLng destLocation, double destZoom) {
+    double distance = Geolocator.distanceBetween(
+        _mapController.center.latitude,
+        _mapController.center.longitude,
+        destLocation.latitude,
+        destLocation.longitude);
+
+    // 없으면 api crash
+    if (distance > 5000) {
+      _mapController.move(destLocation, destZoom - 1);
+      _animatedMapMove(destLocation, destZoom);
+      return;
+    }
     // Create some tweens. These serve to split up the transition from one location to another.
     // In our case, we want to split the transition be<tween> our current map center and the destination.
     final latTween = Tween<double>(
@@ -115,12 +129,30 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     //FocusScope.of(context).unfocus();
     final result = await Navigator.of(context).push(
         MaterialPageRoute(builder: (context) => const PlaceSearchScreen()));
-    setState(() {
-      passedGeofeature = result;
-    });
+
+    passedGeofeature = result;
+    if (passedGeofeature != null) {
+      _onPlusTap(geocodingFeature: passedGeofeature);
+    }
   }
 
-  void _onPlusTap() async {
+  void _onPlusTap({GeocodingFeature? geocodingFeature}) async {
+    PlaceModel temp = PlaceModel(name: "temporary");
+    late LatLng positionToAdd;
+    if (geocodingFeature == null) {
+      positionToAdd = _currentPosition;
+    } else {
+      positionToAdd =
+          LatLng(passedGeofeature!.center[1], passedGeofeature!.center[0]);
+    }
+    widget.savedMaps.currentMap.addTempMarker(temp, positionToAdd);
+    setState(() {});
+    // 현재 추가하는 위치 잘 보이게 하려고 이동
+    LatLng cameraMovedToShowMarker = LatLng(positionToAdd.latitude - 0.0019,
+        positionToAdd.longitude); //zoom 17일때 0.0014
+    _animatedMapMove(cameraMovedToShowMarker, 16.5);
+    // 검색해서 찾은 장소 이름/주소 자동 입력
+    if (geocodingFeature != null) {}
     await showModalBottomSheet(
       isDismissible: false,
       isScrollControlled: true, // bottom sheet의 사이즈를 조절할 수 있게해줌.
@@ -141,17 +173,22 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         child: DraggableScrollableSheet(
           expand: false,
           maxChildSize: 0.8,
-          initialChildSize: 0.75,
-          minChildSize: 0.3,
+          initialChildSize: 0.62,
+          minChildSize: 0.1,
           builder: (context, scrollController) => SingleChildScrollView(
             controller: scrollController,
             child: MemoTemplate(
-                savedTagsList: widget.savedMaps.currentMap.savedTagsList),
+              savedTagsList: widget.savedMaps.currentMap.savedTagsList,
+              currentLocation: positionToAdd,
+              placeName: geocodingFeature?.placeName,
+            ),
           ),
         ),
       ),
     ).then(
       (placeModelReturned) => setState(() {
+        widget.savedMaps.currentMap.removeTempMarker(temp);
+
         if (placeModelReturned != null) {
           widget.savedMaps.currentMap.add(placeModelReturned);
         } else {
@@ -198,11 +235,18 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               TileLayer(
                 urlTemplate:
                     "https://api.mapbox.com/styles/v1/minjaegil/$mapStyleId/tiles/256/{z}/{x}/{y}@2x?access_token=$mapAccessToken",
-                additionalOptions: const {
-                  'mapStyleId': mapStyleId,
-                  'accessToken': mapAccessToken,
-                },
+                //tileProvider: NetworkTileProvider(),
               ),
+              CurrentLocationLayer(
+                //followOnLocationUpdate: FollowOnLocationUpdate.always,
+
+                style: const LocationMarkerStyle(
+                    markerDirection: MarkerDirection.heading),
+              ),
+              if (widget.savedMaps.currentMap.markerMapToList().isNotEmpty)
+                MarkerLayer(
+                  markers: widget.savedMaps.currentMap.markerMapToList(),
+                ),
             ],
           ),
           Positioned(
@@ -228,9 +272,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // search bar
                   Container(
-                    width: 360,
-                    height: Sizes.size52,
+                    constraints:
+                        const BoxConstraints.expand(height: Sizes.size52),
                     padding: const EdgeInsets.only(
                       left: Sizes.size12,
                       right: Sizes.size6,
@@ -252,8 +297,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           ),
                         ),
                         Gaps.h14,
-                        SizedBox(
-                          width: 300,
+                        Expanded(
                           child: GestureDetector(
                             onTap: _onSearchBarTap,
                             child: TextField(
@@ -282,8 +326,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
+                  // Chips
                   SizedBox(
-                    height: 60,
+                    height: Sizes.size52,
                     child: ListView.separated(
                       itemCount: widget.savedMaps.currentMap.savedTagsList
                           .length, //_allChipsList.length,
@@ -291,7 +336,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (context, index) {
                         return FilterChip(
-                          elevation: 1,
+                          elevation: 3,
                           backgroundColor: Colors.white,
                           showCheckmark: false,
                           selectedColor: widget
@@ -299,8 +344,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                               .withOpacity(0.9),
                           selected: widget.savedMaps.currentMap
                               .savedTagsList[index].isSelectedAsFilter,
-                          label: Text(widget
-                              .savedMaps.currentMap.savedTagsList[index].label),
+                          label: Text(
+                            widget.savedMaps.currentMap.savedTagsList[index]
+                                .label,
+                          ),
                           side: BorderSide(
                               color: widget.savedMaps.currentMap
                                   .savedTagsList[index].color),
@@ -317,6 +364,23 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     child: GestureDetector(
                       onTap: _getCurrentPosition,
                       child: const CurrentLocationButton(),
+                    ),
+                  ),
+                  Gaps.v12,
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                            onTap: () => _animatedMapMove(
+                                _mapController.center, _mapController.zoom + 1),
+                            child: const ZoomButton(zoomOut: false)),
+                        Gaps.v4,
+                        GestureDetector(
+                            onTap: () => _animatedMapMove(
+                                _mapController.center, _mapController.zoom - 1),
+                            child: const ZoomButton(zoomOut: true)),
+                      ],
                     ),
                   ),
                 ],

@@ -106,8 +106,12 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
                   return ListTile(
                     minLeadingWidth: Sizes.size10,
                     leading: const Icon(Icons.place_outlined),
-                    title: Text(place.placeName.substring(0, idx)),
-                    subtitle: Text(place.placeName.substring(idx + 1).trim()),
+                    title: idx == -1
+                        ? Text(place.placeName)
+                        : Text(place.placeName.substring(0, idx)),
+                    subtitle: idx == -1
+                        ? null
+                        : Text(place.placeName.substring(idx + 1).trim()),
                     onTap: () => _onAutoCorrectPlaceTap(place),
                   );
                 },

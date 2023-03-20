@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
 import 'package:mapmo/models/place_model.dart';
@@ -14,9 +15,14 @@ import 'package:mapmo/features/memo/widgets/add_image_button.dart';
 
 class MemoTemplate extends StatefulWidget {
   final List<TagModel> savedTagsList;
+  final LatLng currentLocation;
+  final String? placeName;
+
   const MemoTemplate({
     super.key,
     required this.savedTagsList,
+    required this.currentLocation,
+    this.placeName,
   });
 
   @override
@@ -24,9 +30,6 @@ class MemoTemplate extends StatefulWidget {
 }
 
 class _MemoTemplateState extends State<MemoTemplate> {
-  final TextEditingController _addressTextEditingController =
-      TextEditingController(text: "서울시 강남구 선릉로 221");
-
   //SavedTagsModel _allChipsList = SavedTagsModel();
   final List<TagModel> _chipsList = [];
 
@@ -39,6 +42,29 @@ class _MemoTemplateState extends State<MemoTemplate> {
   final PlaceModel _placeInfo = PlaceModel(name: "default name");
 
   XFile? _pickedImage;
+  late LatLng location = widget.currentLocation;
+
+  String _getPlaceName(String? placeName) {
+    if (placeName == null) {
+      return "";
+    }
+    int idx = placeName.indexOf(",");
+    if (idx == -1) {
+      return placeName;
+    }
+    return placeName.substring(0, idx).trim();
+  }
+
+  String _getPlaceAddress(String? placeName) {
+    if (placeName == null) {
+      return "";
+    }
+    int idx = placeName.indexOf(",");
+    if (idx == -1) {
+      return placeName;
+    }
+    return placeName.substring(idx + 1).trim();
+  }
 
   void _getPhotoLibraryImage() async {
     Navigator.of(context).pop();
@@ -130,8 +156,9 @@ class _MemoTemplateState extends State<MemoTemplate> {
                 width: 150,
                 // TODO: change to formtextfield to check if there's tags with same name etc.
                 child: TextField(
+                  autofocus: true,
                   controller: _tagTextEditingController,
-                  maxLength: 20,
+                  maxLength: 15,
                   textAlign: TextAlign.center,
                   decoration: const InputDecoration(
                     focusedBorder: InputBorder.none,
@@ -307,7 +334,7 @@ class _MemoTemplateState extends State<MemoTemplate> {
         setState(() {
           _placeInfo.image = _pickedImage;
           _placeInfo.tags = _chipsList;
-
+          _placeInfo.location = location;
           Navigator.pop(context, _placeInfo);
         });
 
@@ -319,7 +346,7 @@ class _MemoTemplateState extends State<MemoTemplate> {
   @override
   void dispose() {
     _tagTextEditingController.dispose();
-    _addressTextEditingController.dispose();
+    //_addressTextEditingController.dispose();
     super.dispose();
   }
 
@@ -424,6 +451,7 @@ class _MemoTemplateState extends State<MemoTemplate> {
                     Gaps.h10,
                     Expanded(
                       child: TextFormField(
+                        initialValue: _getPlaceName(widget.placeName),
                         maxLines: 1,
                         cursorColor: Theme.of(context).primaryColor,
                         decoration: const InputDecoration(
@@ -457,8 +485,9 @@ class _MemoTemplateState extends State<MemoTemplate> {
                     Gaps.h10,
                     Expanded(
                       child: TextFormField(
+                        initialValue: _getPlaceAddress(widget.placeName),
                         maxLines: 1,
-                        controller: _addressTextEditingController,
+                        //controller: _addressTextEditingController,
                         cursorColor: Theme.of(context).primaryColor,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
@@ -479,7 +508,7 @@ class _MemoTemplateState extends State<MemoTemplate> {
                     ),
                   ],
                 ),
-                Gaps.v12,
+                //Gaps.v8,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -509,9 +538,10 @@ class _MemoTemplateState extends State<MemoTemplate> {
                     ),
                   ],
                 ),
-                Gaps.v10,
+                //Gaps.v10,
                 Wrap(
                   spacing: Sizes.size8,
+                  runSpacing: -Sizes.size8,
                   children: [
                     for (var chipData in _chipsList)
                       Chip(
@@ -546,23 +576,22 @@ class _MemoTemplateState extends State<MemoTemplate> {
                   ),
                 ),
                 Gaps.v10,
-                SizedBox(
-                  height: Sizes.imageHeight,
-                  child: TextFormField(
-                    //onTap: _onStartWriting,
-                    cursorColor: Theme.of(context).primaryColor,
+                TextFormField(
+                  //onTap: _onStartWriting,s
+                  cursorColor: Theme.of(context).primaryColor,
+                  textInputAction: TextInputAction.newline,
 
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: "메모를 추가하세요!",
-                    ),
-
-                    onSaved: (newValue) {
-                      if (newValue != null) {
-                        _placeInfo.memo = newValue;
-                      }
-                    },
+                  maxLines: null,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "메모를 추가하세요!",
                   ),
+
+                  onSaved: (newValue) {
+                    if (newValue != null) {
+                      _placeInfo.memo = newValue;
+                    }
+                  },
                 ),
               ],
             ),

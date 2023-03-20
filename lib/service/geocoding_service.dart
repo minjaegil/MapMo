@@ -34,7 +34,7 @@ class GeocodingService {
   Future<List<GeocodingFeature>> getAutoCompletePlaces(String query) async {
     final response = await http.get(
       Uri.parse(
-          'https://api.mapbox.com/geocoding/v5/mapbox.places/$query.json?language=kr&access_token=$mapboxAccessToken'),
+          'https://api.mapbox.com/geocoding/v5/mapbox.places/$query.json?proximity=ip&language=ko&access_token=$mapboxAccessToken'),
     );
 
     if (response.statusCode == 200) {

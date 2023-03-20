@@ -26,25 +26,19 @@ class ListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 1,
-        title: Stack(
-          children: [
-            GestureDetector(
-              onTap: () => _onMenuTap(context),
-              child: const Icon(
-                Icons.menu,
-                color: Colors.black,
-              ),
-            ),
-            const Center(
-              child: Text(
-                "장소 모아보기",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: Sizes.size18,
-                ),
-              ),
-            ),
-          ],
+        leading: GestureDetector(
+          onTap: () => _onMenuTap(context),
+          child: const Icon(
+            Icons.menu,
+            color: Colors.black,
+          ),
+        ),
+        title: const Text(
+          "장소 모아보기",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: Sizes.size18,
+          ),
         ),
         backgroundColor: Colors.white,
       ),
@@ -78,7 +72,7 @@ class ListScreen extends StatelessWidget {
                   else
                     Container(
                       height: Sizes.imageHeight,
-                      decoration: const BoxDecoration(color: Colors.red),
+                      decoration: BoxDecoration(color: Colors.grey.shade200),
                     ),
                   Padding(
                     padding: const EdgeInsets.only(
@@ -102,7 +96,7 @@ class ListScreen extends StatelessWidget {
                       ),
                       child: Wrap(
                         spacing: Sizes.size8,
-                        runSpacing: -Sizes.size5,
+                        runSpacing: -Sizes.size8,
                         children: [
                           for (var chipData
                               in savedMaps.currentMap.savedPlaces[index].tags!)

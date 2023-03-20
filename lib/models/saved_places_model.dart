@@ -1,6 +1,9 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:mapmo/constants/sizes.dart';
 import 'package:mapmo/models/place_model.dart';
 import 'package:mapmo/models/tag_model.dart';
 
@@ -15,6 +18,8 @@ class SavedPlacesModel extends ChangeNotifier {
     TagModel(label: "일식", color: Colors.deepOrange): 1,
   };
 
+  final Map<PlaceModel, Marker> _markers = {};
+
   /// An unmodifiable view of the items in the cart.
   UnmodifiableListView<PlaceModel> get savedPlaces =>
       UnmodifiableListView(_savedPlaces);
@@ -22,6 +27,8 @@ class SavedPlacesModel extends ChangeNotifier {
   UnmodifiableListView<TagModel> get savedTagsList => tagMapToList();
 
   String get mapName => _mapName;
+
+  UnmodifiableListView<Marker> get savedMarkers => markerMapToList();
 
   /// Adds [PlaceModel] to list. This and [remove] are the only ways to modify the list from the outside.
   void add(PlaceModel place) {
@@ -37,6 +44,32 @@ class SavedPlacesModel extends ChangeNotifier {
         }
       }
     }
+    // TODO: add markers
+    if (place.location != null) {
+      Marker marker = Marker(
+          anchorPos: AnchorPos.exactly(Anchor(30, 37)),
+          width: 60,
+          height: 60,
+          point: place.location!,
+          builder: (context) => Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.stars_sharp,
+                    color: Colors.amber,
+                  ),
+                  Text(
+                    place.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ));
+      _markers[place] = marker;
+    }
+
     // This call tells the widgets that are listening to this model to rebuild.
     notifyListeners();
   }
@@ -51,6 +84,7 @@ class SavedPlacesModel extends ChangeNotifier {
         }
       }
     }
+    _markers.remove(place);
     notifyListeners();
   }
 
@@ -58,8 +92,32 @@ class SavedPlacesModel extends ChangeNotifier {
     return UnmodifiableListView(_savedTags.keys);
   }
 
+  UnmodifiableListView<Marker> markerMapToList() {
+    return UnmodifiableListView(_markers.values);
+  }
+
   void setMapName(String name) {
     _mapName = name;
+    notifyListeners();
+  }
+
+  void addTempMarker(PlaceModel temp, LatLng location) {
+    Marker marker = Marker(
+      anchorPos: AnchorPos.exactly(
+          Anchor(6.5, -11)), //AnchorPos.align(AnchorAlign.top),
+      point: location,
+      builder: (context) => const Icon(
+        Icons.location_pin,
+        color: Colors.red,
+        size: Sizes.size48,
+      ),
+    );
+    _markers[temp] = marker;
+    notifyListeners();
+  }
+
+  void removeTempMarker(PlaceModel temp) {
+    _markers.remove(temp);
     notifyListeners();
   }
 }
