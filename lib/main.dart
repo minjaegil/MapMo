@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapmo/constants/sizes.dart';
-import 'package:mapmo/common/main_navigation/main_navigation_screen.dart';
+import 'package:mapmo/features/main_navigation/main_navigation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

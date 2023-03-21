@@ -45,11 +45,13 @@ dependencies:
   build_runner: ^2.3.3
   uuid: ^3.0.7
   
+  google_maps_flutter: ^2.2.5
+  google_maps_flutter_web: ^0.4.0+7
   geolocator: ^9.0.2
-  flutter_map: ^3.1.0
-  latlong2: ^0.8.1
+  widget_to_marker: ^1.0.3
+  
   provider: ^6.0.5
-  flutter_map_location_marker: ^5.2.1
+  
 
 dev_dependencies:
   flutter_test:

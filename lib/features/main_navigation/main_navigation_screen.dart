@@ -34,7 +34,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               children: [
                 Offstage(
                   offstage: _selectedIndex != 0,
-                  child: MapScreen(savedMaps: mapsList),
+                  child: MapScreen(
+                    savedMaps: mapsList,
+                  ),
                 ),
                 Offstage(
                   offstage: _selectedIndex != 1,

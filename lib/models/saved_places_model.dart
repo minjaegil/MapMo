@@ -1,11 +1,13 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:mapmo/constants/sizes.dart';
+//import 'package:flutter_map/flutter_map.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:mapmo/common/marker.dart';
+
 import 'package:mapmo/models/place_model.dart';
 import 'package:mapmo/models/tag_model.dart';
+import 'package:widget_to_marker/widget_to_marker.dart';
 
 class SavedPlacesModel extends ChangeNotifier {
   final List<PlaceModel> _savedPlaces = [];
@@ -31,7 +33,7 @@ class SavedPlacesModel extends ChangeNotifier {
   UnmodifiableListView<Marker> get savedMarkers => markerMapToList();
 
   /// Adds [PlaceModel] to list. This and [remove] are the only ways to modify the list from the outside.
-  void add(PlaceModel place) {
+  void add(PlaceModel place) async {
     _savedPlaces.add(place);
     // add tags
     if (place.tags != null) {
@@ -47,26 +49,13 @@ class SavedPlacesModel extends ChangeNotifier {
     // TODO: add markers
     if (place.location != null) {
       Marker marker = Marker(
-          anchorPos: AnchorPos.exactly(Anchor(30, 37)),
-          width: 60,
-          height: 60,
-          point: place.location!,
-          builder: (context) => Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.stars_sharp,
-                    color: Colors.amber,
-                  ),
-                  Text(
-                    place.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ));
+        markerId: MarkerId(place.name),
+        anchor: const Offset(0.5, 0.15),
+        position: place.location!,
+        icon: await MyMarker(
+          placeName: place.name,
+        ).toBitmapDescriptor(),
+      );
       _markers[place] = marker;
     }
 
@@ -103,14 +92,8 @@ class SavedPlacesModel extends ChangeNotifier {
 
   void addTempMarker(PlaceModel temp, LatLng location) {
     Marker marker = Marker(
-      anchorPos: AnchorPos.exactly(
-          Anchor(6.5, -11)), //AnchorPos.align(AnchorAlign.top),
-      point: location,
-      builder: (context) => const Icon(
-        Icons.location_pin,
-        color: Colors.red,
-        size: Sizes.size48,
-      ),
+      markerId: const MarkerId("temp"),
+      position: location,
     );
     _markers[temp] = marker;
     notifyListeners();

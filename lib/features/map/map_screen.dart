@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
+
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import 'package:mapmo/common/drawer/drawer_screen.dart';
 import 'package:mapmo/common/place_search/place_search_screen.dart';
 import 'package:mapmo/features/map/widgets/zoom_button.dart';
@@ -10,7 +10,6 @@ import 'package:mapmo/features/memo/memo_template.dart';
 import 'package:mapmo/models/place_model.dart';
 import 'package:mapmo/models/saved_maps.dart';
 
-//import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mapmo/service/api_constants.dart';
 
 import 'package:mapmo/constants/gaps.dart';
@@ -23,6 +22,7 @@ import 'package:side_sheet/side_sheet.dart';
 
 class MapScreen extends StatefulWidget {
   final SavedMaps savedMaps;
+
   const MapScreen({
     super.key,
     required this.savedMaps,
@@ -33,9 +33,22 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
-  LatLng _currentPosition = ApiConstants.myLocation;
-  final _mapController = MapController();
+  LatLng _currentLocation = ApiConstants.myLocation;
+
+  late CameraPosition _displayPosition;
+
+  late GoogleMapController _mapController;
   GeocodingFeature? passedGeofeature;
+
+  void _onMapCreated(GoogleMapController controller) async {
+    _mapController = controller;
+
+    String value = await DefaultAssetBundle.of(context)
+        .loadString('assets/map_style.json');
+    _mapController.setMapStyle(value);
+
+    _getCurrentPosition();
+  }
 
   Future<bool> _handleLocationPermission() async {
     bool serviceEnabled;
@@ -58,19 +71,45 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     final hasPermission = await _handleLocationPermission();
     if (!hasPermission) return;
 
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((Position position) {
-      setState(() {
-        _currentPosition = LatLng(position.latitude, position.longitude);
-        _animatedMapMove(_currentPosition, _mapController.zoom);
-      });
-    }).catchError((e) {
-      debugPrint(e);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {
+      _currentLocation = LatLng(position.latitude, position.longitude);
     });
+    _mapController.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: _currentLocation, zoom: _displayPosition.zoom),
+      ),
+    );
   }
 
-  void _animatedMapMove(LatLng destLocation, double destZoom) {
-    double distance = Geolocator.distanceBetween(
+  void _onZoomInTap() async {
+    _mapController.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: _displayPosition.target,
+          zoom: _displayPosition.zoom + 1,
+        ),
+      ),
+    );
+  }
+
+  void _onZoomOutTap() async {
+    _mapController.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: _displayPosition.target,
+          zoom: _displayPosition.zoom - 1,
+        ),
+      ),
+    );
+  }
+
+  /* void _animatedMapMove(LatLng destLocation, double destZoom) {
+    
+    
+    /* double distance = Geolocator.distanceBetween(
         _mapController.center.latitude,
         _mapController.center.longitude,
         destLocation.latitude,
@@ -81,7 +120,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       _mapController.move(destLocation, destZoom - 1);
       _animatedMapMove(destLocation, destZoom);
       return;
-    }
+    } */
     // Create some tweens. These serve to split up the transition from one location to another.
     // In our case, we want to split the transition be<tween> our current map center and the destination.
     final latTween = Tween<double>(
@@ -113,7 +152,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     });
 
     controller.forward();
-  }
+  } */
 
   void _onMenuTap(BuildContext context) async {
     await SideSheet.left(
@@ -140,7 +179,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     PlaceModel temp = PlaceModel(name: "temporary");
     late LatLng positionToAdd;
     if (geocodingFeature == null) {
-      positionToAdd = _currentPosition;
+      positionToAdd =
+          LatLng(_currentLocation.latitude, _currentLocation.longitude);
     } else {
       positionToAdd =
           LatLng(passedGeofeature!.center[1], passedGeofeature!.center[0]);
@@ -148,9 +188,18 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     widget.savedMaps.currentMap.addTempMarker(temp, positionToAdd);
     setState(() {});
     // 현재 추가하는 위치 잘 보이게 하려고 이동
-    LatLng cameraMovedToShowMarker = LatLng(positionToAdd.latitude - 0.0019,
+    LatLng cameraMovedToShowMarker = LatLng(positionToAdd.latitude - 0.0014,
         positionToAdd.longitude); //zoom 17일때 0.0014
-    _animatedMapMove(cameraMovedToShowMarker, 16.5);
+    _mapController.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: cameraMovedToShowMarker,
+          zoom: 17,
+          tilt: _displayPosition.tilt,
+        ),
+      ),
+    );
+
     // 검색해서 찾은 장소 이름/주소 자동 입력
     if (geocodingFeature != null) {}
     await showModalBottomSheet(
@@ -203,8 +252,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    //_getCurrentPosition();
     super.initState();
-    _getCurrentPosition();
   }
 
   @override
@@ -215,39 +264,25 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    const mapStyleId = ApiConstants.mapBoxStyleId;
-    const mapAccessToken = ApiConstants.mapBoxAccessToken;
-
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              minZoom: 5,
-              maxZoom: 18,
-              zoom: 13,
-              center: _currentPosition,
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            initialCameraPosition: CameraPosition(
+              target: _currentLocation,
+              zoom: 13.0,
             ),
-            children: [
-              TileLayer(
-                urlTemplate:
-                    "https://api.mapbox.com/styles/v1/minjaegil/$mapStyleId/tiles/256/{z}/{x}/{y}@2x?access_token=$mapAccessToken",
-                //tileProvider: NetworkTileProvider(),
-              ),
-              CurrentLocationLayer(
-                //followOnLocationUpdate: FollowOnLocationUpdate.always,
-
-                style: const LocationMarkerStyle(
-                    markerDirection: MarkerDirection.heading),
-              ),
-              if (widget.savedMaps.currentMap.markerMapToList().isNotEmpty)
-                MarkerLayer(
-                  markers: widget.savedMaps.currentMap.markerMapToList(),
-                ),
-            ],
+            onCameraMove: (position) {
+              setState(() {
+                _displayPosition = position;
+              });
+            },
+            markers: Set.from(widget.savedMaps.currentMap.markerMapToList()),
           ),
           Positioned(
             bottom: 20,
@@ -372,13 +407,11 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     child: Column(
                       children: [
                         GestureDetector(
-                            onTap: () => _animatedMapMove(
-                                _mapController.center, _mapController.zoom + 1),
+                            onTap: _onZoomInTap,
                             child: const ZoomButton(zoomOut: false)),
                         Gaps.v4,
                         GestureDetector(
-                            onTap: () => _animatedMapMove(
-                                _mapController.center, _mapController.zoom - 1),
+                            onTap: _onZoomOutTap,
                             child: const ZoomButton(zoomOut: true)),
                       ],
                     ),
