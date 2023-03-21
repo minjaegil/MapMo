@@ -200,9 +200,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       ),
     );
 
-    // 검색해서 찾은 장소 이름/주소 자동 입력
+    // TODO: 검색해서 찾은 장소 이름/주소 자동 입력
     if (geocodingFeature != null) {}
-    await showModalBottomSheet(
+    PlaceModel? placeModelReturned = await showModalBottomSheet(
       isDismissible: false,
       isScrollControlled: true, // bottom sheet의 사이즈를 조절할 수 있게해줌.
       backgroundColor: Colors.white,
@@ -234,20 +234,20 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           ),
         ),
       ),
-    ).then(
-      (placeModelReturned) => setState(() {
-        widget.savedMaps.currentMap.removeTempMarker(temp);
-
-        if (placeModelReturned != null) {
-          widget.savedMaps.currentMap.add(placeModelReturned);
-        } else {
-          // tag선택 초기화; 안하면 태그추가 할 때 선택돼 있음.
-          for (var tag in widget.savedMaps.currentMap.savedTagsList) {
-            tag.isSelectedAsTag = false;
-          }
-        }
-      }),
     );
+
+    widget.savedMaps.currentMap.removeTempMarker(temp);
+
+    if (placeModelReturned != null) {
+      // await이 없으면 마커가 늦게 생김.
+      await widget.savedMaps.currentMap.add(placeModelReturned);
+    } else {
+      // tag선택 초기화; 안하면 태그추가 할 때 선택돼 있음.
+      for (var tag in widget.savedMaps.currentMap.savedTagsList) {
+        tag.isSelectedAsTag = false;
+      }
+    }
+    setState(() {});
   }
 
   @override
@@ -282,7 +282,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 _displayPosition = position;
               });
             },
-            markers: Set.from(widget.savedMaps.currentMap.markerMapToList()),
+            markers: widget.savedMaps.currentMap.savedMarkersSet,
           ),
           Positioned(
             bottom: 20,

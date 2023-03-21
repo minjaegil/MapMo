@@ -31,9 +31,10 @@ class SavedPlacesModel extends ChangeNotifier {
   String get mapName => _mapName;
 
   UnmodifiableListView<Marker> get savedMarkers => markerMapToList();
+  UnmodifiableSetView<Marker> get savedMarkersSet => markerMapToSet();
 
   /// Adds [PlaceModel] to list. This and [remove] are the only ways to modify the list from the outside.
-  void add(PlaceModel place) async {
+  Future<void> add(PlaceModel place) async {
     _savedPlaces.add(place);
     // add tags
     if (place.tags != null) {
@@ -46,7 +47,7 @@ class SavedPlacesModel extends ChangeNotifier {
         }
       }
     }
-    // TODO: add markers
+
     if (place.location != null) {
       Marker marker = Marker(
         markerId: MarkerId(place.name),
@@ -58,7 +59,6 @@ class SavedPlacesModel extends ChangeNotifier {
       );
       _markers[place] = marker;
     }
-
     // This call tells the widgets that are listening to this model to rebuild.
     notifyListeners();
   }
@@ -83,6 +83,10 @@ class SavedPlacesModel extends ChangeNotifier {
 
   UnmodifiableListView<Marker> markerMapToList() {
     return UnmodifiableListView(_markers.values);
+  }
+
+  UnmodifiableSetView<Marker> markerMapToSet() {
+    return UnmodifiableSetView(_markers.values.toSet());
   }
 
   void setMapName(String name) {
