@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
 import 'package:mapmo/common/drawer/drawer_screen.dart';
+import 'package:mapmo/features/list/widgets/place_card.dart';
 import 'package:mapmo/models/saved_maps.dart';
 import 'package:side_sheet/side_sheet.dart';
 
@@ -51,71 +50,8 @@ class ListScreen extends StatelessWidget {
           itemCount: savedMaps.currentMap.savedPlaces.length,
           separatorBuilder: (context, index) => Gaps.h7,
           itemBuilder: (context, index) {
-            return Card(
-              //elevation: 5,
-              clipBehavior: Clip.hardEdge,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(Sizes.size8)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (savedMaps.currentMap.savedPlaces[index].image != null)
-                    Image(
-                      image: FileImage(
-                        File(savedMaps
-                            .currentMap.savedPlaces[index].image!.path),
-                      ),
-                      fit: BoxFit.cover,
-                      height: Sizes.imageHeight,
-                      width: MediaQuery.of(context).size.width,
-                    )
-                  else
-                    Container(
-                      height: Sizes.imageHeight,
-                      decoration: BoxDecoration(color: Colors.grey.shade200),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: Sizes.size5,
-                      right: Sizes.size5,
-                      top: Sizes.size10,
-                      bottom: Sizes.size2,
-                    ),
-                    child: Text(
-                      savedMaps.currentMap.savedPlaces[index].name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: Sizes.size18,
-                      ),
-                    ),
-                  ),
-                  if (savedMaps.currentMap.savedPlaces[index].tags!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Sizes.size5,
-                      ),
-                      child: Wrap(
-                        spacing: Sizes.size8,
-                        runSpacing: -Sizes.size8,
-                        children: [
-                          for (var chipData
-                              in savedMaps.currentMap.savedPlaces[index].tags!)
-                            Chip(
-                              elevation: 0,
-                              backgroundColor: Colors.white,
-                              label: Text(chipData.label),
-                              side: BorderSide(color: chipData.color),
-                            ),
-                        ],
-                      ),
-                    )
-                  else if (savedMaps
-                          .currentMap.savedPlaces[index].tags!.isEmpty ||
-                      savedMaps.currentMap.savedPlaces[index].tags == null)
-                    Gaps.v48,
-                ],
-              ),
-            );
+            return PlaceCard(
+                placeModel: savedMaps.currentMap.savedPlaces[index]);
           },
         ),
       ),

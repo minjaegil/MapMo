@@ -17,6 +17,7 @@ class MyMarker extends StatelessWidget {
       children: [
         const Icon(
           Icons.stars_sharp,
+          size: Sizes.size24,
           color: Colors.amber,
         ),
         SizedBox(
@@ -28,9 +29,16 @@ class MyMarker extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
-            ),
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+                fontSize: Sizes.size12,
+                shadows: [
+                  Shadow(
+                    color: Colors.white,
+                    offset: Offset(1.0, 1.0),
+                    //blurRadius: 10.0,
+                  ),
+                ]),
           ),
         ),
       ],

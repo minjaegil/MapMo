@@ -14,10 +14,10 @@ class SavedPlacesModel extends ChangeNotifier {
 
   String _mapName = "내 지도";
 
-  final Map<TagModel, int> _savedTags = {
-    TagModel(label: "한식", color: Colors.green): 1,
-    TagModel(label: "양식", color: Colors.blueGrey): 1,
-    TagModel(label: "일식", color: Colors.deepOrange): 1,
+  final Map<TagModel, List<PlaceModel>> _savedTags = {
+    TagModel(label: "골프", color: Colors.green): [],
+    TagModel(label: "양식", color: Colors.blueGrey): [],
+    TagModel(label: "일식", color: Colors.deepOrange): [],
   };
 
   final Map<PlaceModel, Marker> _markers = {};
@@ -31,7 +31,7 @@ class SavedPlacesModel extends ChangeNotifier {
   String get mapName => _mapName;
 
   UnmodifiableListView<Marker> get savedMarkers => markerMapToList();
-  UnmodifiableSetView<Marker> get savedMarkersSet => markerMapToSet();
+  //UnmodifiableSetView<Marker> get savedMarkersSet => markerMapToSet();
 
   /// Adds [PlaceModel] to list. This and [remove] are the only ways to modify the list from the outside.
   Future<void> add(PlaceModel place) async {
@@ -41,9 +41,9 @@ class SavedPlacesModel extends ChangeNotifier {
       for (var tag in place.tags!) {
         tag.isSelectedAsTag = false; // tag선택 초기화; 안하면 태그추가 할 때 선택돼 있음.
         if (_savedTags.containsKey(tag)) {
-          _savedTags[tag] = _savedTags[tag]! + 1;
+          _savedTags[tag]!.add(place);
         } else {
-          _savedTags[tag] = 1;
+          _savedTags[tag] = [place];
         }
       }
     }
@@ -51,13 +51,16 @@ class SavedPlacesModel extends ChangeNotifier {
     if (place.location != null) {
       Marker marker = Marker(
         markerId: MarkerId(place.name),
-        anchor: const Offset(0.5, 0.15),
+        // TODO: show card when marker tapped.
+        onTap: () {},
+        anchor: const Offset(0.5, 0.2),
         position: place.location!,
         icon: await MyMarker(
           placeName: place.name,
         ).toBitmapDescriptor(),
       );
       _markers[place] = marker;
+      //markersToShow.add(marker);
     }
     // This call tells the widgets that are listening to this model to rebuild.
     notifyListeners();
@@ -67,8 +70,8 @@ class SavedPlacesModel extends ChangeNotifier {
     _savedPlaces.remove(place);
     if (place.tags != null) {
       for (var tag in place.tags!) {
-        _savedTags[tag] = _savedTags[tag]! - 1;
-        if (_savedTags[tag] == 0) {
+        _savedTags[tag]!.remove(place);
+        if (_savedTags[tag]!.isEmpty) {
           _savedTags.remove(tag);
         }
       }
@@ -85,8 +88,22 @@ class SavedPlacesModel extends ChangeNotifier {
     return UnmodifiableListView(_markers.values);
   }
 
-  UnmodifiableSetView<Marker> markerMapToSet() {
-    return UnmodifiableSetView(_markers.values.toSet());
+  UnmodifiableSetView<Marker> filteredMarkerSet() {
+    Set<PlaceModel> selectedPlaces = _markers.keys.toSet();
+    Set<Marker> filteredMarker = {};
+    for (var tag in _savedTags.keys) {
+      if (tag.isSelectedAsFilter) {
+        selectedPlaces = selectedPlaces.intersection(_savedTags[tag]!.toSet());
+      }
+    }
+    if (selectedPlaces.isEmpty) {
+      return UnmodifiableSetView(filteredMarker);
+    }
+    for (var place in selectedPlaces) {
+      filteredMarker.add(_markers[place]!);
+    }
+    return UnmodifiableSetView(filteredMarker);
+    //  _markers.values.toSet()
   }
 
   void setMapName(String name) {
@@ -99,11 +116,13 @@ class SavedPlacesModel extends ChangeNotifier {
       markerId: const MarkerId("temp"),
       position: location,
     );
+    //markersToShow.add(marker);
     _markers[temp] = marker;
     notifyListeners();
   }
 
   void removeTempMarker(PlaceModel temp) {
+    //markersToShow.remove(_markers[temp]);
     _markers.remove(temp);
     notifyListeners();
   }

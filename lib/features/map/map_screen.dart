@@ -47,7 +47,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         .loadString('assets/map_style.json');
     _mapController.setMapStyle(value);
 
-    _getCurrentPosition();
+    _moveToCurrentPosition();
   }
 
   Future<bool> _handleLocationPermission() async {
@@ -77,9 +77,14 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     setState(() {
       _currentLocation = LatLng(position.latitude, position.longitude);
     });
+  }
+
+  void _moveToCurrentPosition() async {
+    _getCurrentPosition();
+    double currentZoom = await _mapController.getZoomLevel();
     _mapController.animateCamera(
       CameraUpdate.newCameraPosition(
-        CameraPosition(target: _currentLocation, zoom: _displayPosition.zoom),
+        CameraPosition(target: _currentLocation, zoom: currentZoom),
       ),
     );
   }
@@ -252,8 +257,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    //_getCurrentPosition();
     super.initState();
+    _getCurrentPosition();
   }
 
   @override
@@ -282,7 +287,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 _displayPosition = position;
               });
             },
-            markers: widget.savedMaps.currentMap.savedMarkersSet,
+            markers: widget.savedMaps.currentMap.filteredMarkerSet(),
+            //widget.savedMaps.currentMap.savedMarkersSet,
           ),
           Positioned(
             bottom: 20,
@@ -386,10 +392,11 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           side: BorderSide(
                               color: widget.savedMaps.currentMap
                                   .savedTagsList[index].color),
-                          onSelected: (value) => setState(() {
+                          onSelected: (value) {
                             widget.savedMaps.currentMap.savedTagsList[index]
                                 .isSelectedAsFilter = value;
-                          }),
+                            setState(() {});
+                          },
                         );
                       },
                     ),
@@ -397,7 +404,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                   Align(
                     alignment: Alignment.topRight,
                     child: GestureDetector(
-                      onTap: _getCurrentPosition,
+                      onTap: _moveToCurrentPosition,
                       child: const CurrentLocationButton(),
                     ),
                   ),
