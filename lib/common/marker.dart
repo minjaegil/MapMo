@@ -15,10 +15,16 @@ class MyMarker extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
-          Icons.stars_sharp,
-          size: Sizes.size24,
-          color: Colors.amber,
+        Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.stars_rounded,
+            size: Sizes.size24,
+            color: Colors.amber,
+          ),
         ),
         SizedBox(
           width: Sizes.size80,
@@ -36,7 +42,6 @@ class MyMarker extends StatelessWidget {
                   Shadow(
                     color: Colors.white,
                     offset: Offset(1.0, 1.0),
-                    //blurRadius: 10.0,
                   ),
                 ]),
           ),

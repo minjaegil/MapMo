@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:mapmo/common/marker.dart';
+import 'package:mapmo/common/place_card.dart';
 
-import 'package:mapmo/common/drawer/drawer_screen.dart';
-import 'package:mapmo/common/place_search/place_search_screen.dart';
+import 'package:mapmo/features/drawer/drawer_screen.dart';
+import 'package:mapmo/features/place_search/place_search_screen.dart';
 import 'package:mapmo/features/map/widgets/zoom_button.dart';
 import 'package:mapmo/features/memo/memo_template.dart';
 import 'package:mapmo/models/place_model.dart';
@@ -19,6 +21,7 @@ import 'package:mapmo/features/map/widgets/current_location_button.dart';
 
 import 'package:mapmo/service/geocoding_service.dart';
 import 'package:side_sheet/side_sheet.dart';
+import 'package:widget_to_marker/widget_to_marker.dart';
 
 class MapScreen extends StatefulWidget {
   final SavedMaps savedMaps;
@@ -40,6 +43,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   late GoogleMapController _mapController;
   GeocodingFeature? passedGeofeature;
 
+  PlaceModel? _placeToShowOnMarkerTap;
+
   void _onMapCreated(GoogleMapController controller) async {
     _mapController = controller;
 
@@ -47,7 +52,15 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         .loadString('assets/map_style.json');
     _mapController.setMapStyle(value);
 
-    _moveToCurrentPosition();
+    _getCurrentPosition();
+    _mapController.moveCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: _currentLocation,
+          zoom: 14,
+        ),
+      ),
+    );
   }
 
   Future<bool> _handleLocationPermission() async {
@@ -82,82 +95,25 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   void _moveToCurrentPosition() async {
     _getCurrentPosition();
     double currentZoom = await _mapController.getZoomLevel();
+
     _mapController.animateCamera(
       CameraUpdate.newCameraPosition(
-        CameraPosition(target: _currentLocation, zoom: currentZoom),
+        CameraPosition(
+          target: _currentLocation,
+          zoom: currentZoom,
+          tilt: _displayPosition.tilt,
+        ),
       ),
     );
   }
 
   void _onZoomInTap() async {
-    _mapController.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: _displayPosition.target,
-          zoom: _displayPosition.zoom + 1,
-        ),
-      ),
-    );
+    _mapController.animateCamera(CameraUpdate.zoomIn());
   }
 
   void _onZoomOutTap() async {
-    _mapController.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: _displayPosition.target,
-          zoom: _displayPosition.zoom - 1,
-        ),
-      ),
-    );
+    _mapController.animateCamera(CameraUpdate.zoomOut());
   }
-
-  /* void _animatedMapMove(LatLng destLocation, double destZoom) {
-    
-    
-    /* double distance = Geolocator.distanceBetween(
-        _mapController.center.latitude,
-        _mapController.center.longitude,
-        destLocation.latitude,
-        destLocation.longitude);
-
-    // 없으면 api crash
-    if (distance > 5000) {
-      _mapController.move(destLocation, destZoom - 1);
-      _animatedMapMove(destLocation, destZoom);
-      return;
-    } */
-    // Create some tweens. These serve to split up the transition from one location to another.
-    // In our case, we want to split the transition be<tween> our current map center and the destination.
-    final latTween = Tween<double>(
-        begin: _mapController.center.latitude, end: destLocation.latitude);
-    final lngTween = Tween<double>(
-        begin: _mapController.center.longitude, end: destLocation.longitude);
-    final zoomTween = Tween<double>(begin: _mapController.zoom, end: destZoom);
-
-    // Create a animation controller that has a duration and a TickerProvider.
-    final controller = AnimationController(
-        duration: const Duration(milliseconds: 500), vsync: this);
-    // The animation determines what path the animation will take. You can try different Curves values, although I found
-    // fastOutSlowIn to be my favorite.
-    final Animation<double> animation =
-        CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
-
-    controller.addListener(() {
-      _mapController.move(
-          LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
-          zoomTween.evaluate(animation));
-    });
-
-    animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.dispose();
-      } else if (status == AnimationStatus.dismissed) {
-        controller.dispose();
-      }
-    });
-
-    controller.forward();
-  } */
 
   void _onMenuTap(BuildContext context) async {
     await SideSheet.left(
@@ -180,17 +136,19 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _onPlusTap({GeocodingFeature? geocodingFeature}) async {
+  void _onPlusTap(
+      {GeocodingFeature? geocodingFeature, LatLng? pressedPosition}) async {
+    widget.savedMaps.currentMap.clearFilterSelection();
     PlaceModel temp = PlaceModel(name: "temporary");
     late LatLng positionToAdd;
     if (geocodingFeature == null) {
-      positionToAdd =
-          LatLng(_currentLocation.latitude, _currentLocation.longitude);
+      positionToAdd = pressedPosition!;
     } else {
       positionToAdd =
           LatLng(passedGeofeature!.center[1], passedGeofeature!.center[0]);
     }
-    widget.savedMaps.currentMap.addTempMarker(temp, positionToAdd);
+    widget.savedMaps.currentMap
+        .addTempMarker(temp, positionToAdd); //TODO: temp marker
     setState(() {});
     // 현재 추가하는 위치 잘 보이게 하려고 이동
     LatLng cameraMovedToShowMarker = LatLng(positionToAdd.latitude - 0.0014,
@@ -200,7 +158,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         CameraPosition(
           target: cameraMovedToShowMarker,
           zoom: 17,
-          tilt: _displayPosition.tilt,
+          //tilt: _displayPosition.tilt,
         ),
       ),
     );
@@ -230,6 +188,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           initialChildSize: 0.62,
           minChildSize: 0.1,
           builder: (context, scrollController) => SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             controller: scrollController,
             child: MemoTemplate(
               savedTagsList: widget.savedMaps.currentMap.savedTagsList,
@@ -244,14 +203,25 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     widget.savedMaps.currentMap.removeTempMarker(temp);
 
     if (placeModelReturned != null) {
+      Marker marker = Marker(
+        // TODO: 이름이 같을 시 마커가 움직임 (아이디가 같기 때문)
+        markerId: MarkerId(placeModelReturned.name),
+        // TODO: show card when marker tapped.
+        onTap: () => _onMarkerTap(placeModelReturned),
+        anchor: const Offset(0.5, 0.2),
+        position: placeModelReturned.location!,
+        icon: await MyMarker(
+          placeName: placeModelReturned.name,
+        ).toBitmapDescriptor(),
+      );
       // await이 없으면 마커가 늦게 생김.
-      await widget.savedMaps.currentMap.add(placeModelReturned);
-    } else {
-      // tag선택 초기화; 안하면 태그추가 할 때 선택돼 있음.
-      for (var tag in widget.savedMaps.currentMap.savedTagsList) {
-        tag.isSelectedAsTag = false;
-      }
+      await widget.savedMaps.currentMap.add(placeModelReturned, marker);
     }
+    setState(() {});
+  }
+
+  void _onMarkerTap(PlaceModel placeInfo) {
+    _placeToShowOnMarkerTap = placeInfo;
     setState(() {});
   }
 
@@ -278,6 +248,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             onMapCreated: _onMapCreated,
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
+
             initialCameraPosition: CameraPosition(
               target: _currentLocation,
               zoom: 13.0,
@@ -287,6 +258,14 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 _displayPosition = position;
               });
             },
+            onTap: (argument) {
+              _placeToShowOnMarkerTap = null;
+              setState(() {});
+            },
+            onLongPress: (argument) {
+              _onPlusTap(pressedPosition: argument);
+            },
+
             markers: widget.savedMaps.currentMap.filteredMarkerSet(),
             //widget.savedMaps.currentMap.savedMarkersSet,
           ),
@@ -295,7 +274,11 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             right: 15,
             child: SafeArea(
               child: FloatingActionButton(
-                onPressed: () => _onPlusTap(),
+                onPressed: () {
+                  LatLng curloc = LatLng(
+                      _currentLocation.latitude, _currentLocation.longitude);
+                  _onPlusTap(pressedPosition: curloc);
+                },
                 backgroundColor: Colors.white,
                 child: Icon(
                   Icons.add_location_alt_outlined,
@@ -313,7 +296,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // search bar
+                  /// [search bar]
                   Container(
                     constraints:
                         const BoxConstraints.expand(height: Sizes.size52),
@@ -367,7 +350,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
-                  // Chips
+
+                  /// [Chips View]
                   SizedBox(
                     height: Sizes.size52,
                     child: ListView.separated(
@@ -427,6 +411,17 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
+          if (_placeToShowOnMarkerTap != null)
+            Positioned(
+              bottom: Sizes.size3,
+              left: Sizes.size8,
+              right: Sizes.size8,
+              child: SafeArea(
+                child: PlaceCard(
+                    placeModel: _placeToShowOnMarkerTap!,
+                    savedPlacesInfo: widget.savedMaps.currentMap),
+              ),
+            ),
         ],
       ),
     );

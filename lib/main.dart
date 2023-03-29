@@ -26,6 +26,7 @@ class _MyAppState extends State<MyApp> {
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           primaryColor: const Color.fromRGBO(157, 194, 9, 1.0),
+
           appBarTheme: const AppBarTheme(
             foregroundColor: Colors.black,
             backgroundColor: Colors.white,

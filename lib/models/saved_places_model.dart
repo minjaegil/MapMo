@@ -3,11 +3,9 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 //import 'package:flutter_map/flutter_map.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:mapmo/common/marker.dart';
 
 import 'package:mapmo/models/place_model.dart';
 import 'package:mapmo/models/tag_model.dart';
-import 'package:widget_to_marker/widget_to_marker.dart';
 
 class SavedPlacesModel extends ChangeNotifier {
   final List<PlaceModel> _savedPlaces = [];
@@ -31,15 +29,14 @@ class SavedPlacesModel extends ChangeNotifier {
   String get mapName => _mapName;
 
   UnmodifiableListView<Marker> get savedMarkers => markerMapToList();
-  //UnmodifiableSetView<Marker> get savedMarkersSet => markerMapToSet();
 
   /// Adds [PlaceModel] to list. This and [remove] are the only ways to modify the list from the outside.
-  Future<void> add(PlaceModel place) async {
+  Future<void> add(PlaceModel place, Marker marker) async {
     _savedPlaces.add(place);
     // add tags
     if (place.tags != null) {
       for (var tag in place.tags!) {
-        tag.isSelectedAsTag = false; // tag선택 초기화; 안하면 태그추가 할 때 선택돼 있음.
+        //tag.isSelectedAsTag = false; // tag선택 초기화; 안하면 태그추가 할 때 선택돼 있음.
         if (_savedTags.containsKey(tag)) {
           _savedTags[tag]!.add(place);
         } else {
@@ -49,21 +46,30 @@ class SavedPlacesModel extends ChangeNotifier {
     }
 
     if (place.location != null) {
-      Marker marker = Marker(
-        markerId: MarkerId(place.name),
-        // TODO: show card when marker tapped.
-        onTap: () {},
-        anchor: const Offset(0.5, 0.2),
-        position: place.location!,
-        icon: await MyMarker(
-          placeName: place.name,
-        ).toBitmapDescriptor(),
-      );
       _markers[place] = marker;
-      //markersToShow.add(marker);
     }
     // This call tells the widgets that are listening to this model to rebuild.
     notifyListeners();
+  }
+
+  // placemodel에 태그 변경 시 savedtagslist도 변경
+  void addTag(TagModel tag, PlaceModel place) {
+    //tag.isSelectedAsTag = false;
+    if (_savedTags.containsKey(tag)) {
+      _savedTags[tag]!.add(place);
+    } else {
+      _savedTags[tag] = [place];
+    }
+    notifyListeners();
+  }
+
+  void removeTag(TagModel tag, PlaceModel place) {
+    if (_savedTags.containsKey(tag)) {
+      _savedTags[tag]!.remove(place);
+      if (_savedTags[tag]!.isEmpty) {
+        _savedTags.remove(tag);
+      }
+    }
   }
 
   void remove(PlaceModel place) {
@@ -103,7 +109,14 @@ class SavedPlacesModel extends ChangeNotifier {
       filteredMarker.add(_markers[place]!);
     }
     return UnmodifiableSetView(filteredMarker);
-    //  _markers.values.toSet()
+  }
+
+  void clearFilterSelection() {
+    for (var tag in _savedTags.keys) {
+      if (tag.isSelectedAsFilter) {
+        tag.isSelectedAsFilter = !tag.isSelectedAsFilter;
+      }
+    }
   }
 
   void setMapName(String name) {
@@ -126,4 +139,14 @@ class SavedPlacesModel extends ChangeNotifier {
     _markers.remove(temp);
     notifyListeners();
   }
+
+  /* String selectedFiltersToString() {
+    String textToReturn = "";
+    for (var tag in _savedTags.keys) {
+      if (tag.isSelectedAsFilter) {
+        textToReturn += tag.label;
+      }
+      
+    }
+  } */
 }

@@ -248,6 +248,9 @@ class _MemoTemplateState extends State<MemoTemplate> {
       barrierDismissible: false,
       context: context,
       builder: (dialogContext) {
+        for (var tag in widget.savedTagsList) {
+          tag.isSelectedAsTag = false;
+        }
         return StatefulBuilder(builder: (stfContext, stfSetState) {
           return Dialog(
             child: Padding(
@@ -385,10 +388,10 @@ class _MemoTemplateState extends State<MemoTemplate> {
                 style: ButtonStyle(
                   overlayColor: MaterialStateProperty.all(Colors.transparent),
                 ),
-                child: const Text(
+                child: Text(
                   '저장',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Theme.of(context).primaryColor,
                     fontSize: Sizes.size16,
                     fontWeight: FontWeight.w500,
                   ),

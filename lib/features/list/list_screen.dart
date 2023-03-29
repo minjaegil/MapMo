@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
-import 'package:mapmo/common/drawer/drawer_screen.dart';
-import 'package:mapmo/features/list/widgets/place_card.dart';
+import 'package:mapmo/features/drawer/drawer_screen.dart';
+import 'package:mapmo/common/place_card.dart';
 import 'package:mapmo/models/saved_maps.dart';
 import 'package:side_sheet/side_sheet.dart';
 
@@ -43,7 +43,7 @@ class ListScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: Sizes.size12,
+          horizontal: Sizes.size8,
           vertical: Sizes.size8,
         ),
         child: ListView.separated(
@@ -51,7 +51,9 @@ class ListScreen extends StatelessWidget {
           separatorBuilder: (context, index) => Gaps.h7,
           itemBuilder: (context, index) {
             return PlaceCard(
-                placeModel: savedMaps.currentMap.savedPlaces[index]);
+              placeModel: savedMaps.currentMap.savedPlaces[index],
+              savedPlacesInfo: savedMaps.currentMap,
+            );
           },
         ),
       ),
