@@ -1,16 +1,11 @@
-# mapmo
+# MapMo Project
 
 A new Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+## Structure of this project
 
-A few resources to get you started if this is your first Flutter project:
+![MapMo_flowchart](https://user-images.githubusercontent.com/21699055/229036236-6dc63387-5622-48fd-9174-d11ed5de16e8.jpg)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![MapMo_models](https://user-images.githubusercontent.com/21699055/229036091-17e67854-676f-4810-b17a-85aea3fd7fa5.jpg)
