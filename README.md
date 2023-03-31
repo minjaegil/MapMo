@@ -1,7 +1,7 @@
 # MapMo Project
 
 ![Simulator Screen Shot - iPhone 14 Pro - 2023-03-31 at 01 15 14](https://user-images.githubusercontent.com/21699055/229038504-03f916fe-107a-4784-a8de-2d0896639715.png)
-<img src = "https://user-images.githubusercontent.com/21699055/229038504-03f916fe-107a-4784-a8de-2d0896639715.png" width="35%"| height="35%">
+<img src = "https://user-images.githubusercontent.com/21699055/229038504-03f916fe-107a-4784-a8de-2d0896639715.png" width="35%"| height="35%" />
 
 This project aims to build a memo app which users can easily take memo on PLACES.
 
