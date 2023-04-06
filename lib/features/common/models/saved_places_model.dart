@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 //import 'package:flutter_map/flutter_map.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import 'package:mapmo/models/place_model.dart';
-import 'package:mapmo/models/tag_model.dart';
+import 'package:mapmo/features/common/models/place_model.dart';
+import 'package:mapmo/features/common/models/tag_model.dart';
 
 class SavedPlacesModel extends ChangeNotifier {
   final List<PlaceModel> _savedPlaces = [];

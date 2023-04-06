@@ -1,19 +1,19 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:mapmo/common/place_detail_screen.dart';
+import 'package:mapmo/features/memo/views/memo_screen.dart';
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
-import 'package:mapmo/models/place_model.dart';
-import 'package:mapmo/models/saved_places_model.dart';
+import 'package:mapmo/features/common/models/place_model.dart';
+import 'package:mapmo/features/common/models/saved_maps.dart';
 
 class PlaceCard extends StatefulWidget {
   final PlaceModel placeModel;
-  final SavedPlacesModel savedPlacesInfo;
+  final SavedMaps savedMapsInfo;
   const PlaceCard({
     super.key,
     required this.placeModel,
-    required this.savedPlacesInfo,
+    required this.savedMapsInfo,
   });
 
   @override
@@ -25,9 +25,9 @@ class _PlaceCardState extends State<PlaceCard> {
     Navigator.of(context)
         .push(
           MaterialPageRoute(
-            builder: (context) => PlaceDetailScreen(
+            builder: (context) => MemoScreen(
               placeInfo: widget.placeModel,
-              savedPlacesInfo: widget.savedPlacesInfo,
+              savedMapsInfo: widget.savedMapsInfo,
             ),
             fullscreenDialog: true,
           ),

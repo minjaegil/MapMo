@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:mapmo/models/saved_places_model.dart';
+import 'package:mapmo/features/common/models/saved_places_model.dart';
 
 class SavedMaps extends ChangeNotifier {
   final List<SavedPlacesModel> _savedMaps = [SavedPlacesModel()];

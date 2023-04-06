@@ -2,24 +2,23 @@ import 'package:flutter/material.dart';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:mapmo/common/marker.dart';
-import 'package:mapmo/common/place_card.dart';
+import 'package:mapmo/features/common/views/widgets/marker.dart';
+import 'package:mapmo/features/common/views/widgets/place_card.dart';
 
 import 'package:mapmo/features/drawer/drawer_screen.dart';
-import 'package:mapmo/features/place_search/place_search_screen.dart';
-import 'package:mapmo/features/map/widgets/zoom_button.dart';
-import 'package:mapmo/features/memo/memo_template.dart';
-import 'package:mapmo/models/place_model.dart';
-import 'package:mapmo/models/saved_maps.dart';
+import 'package:mapmo/features/memo/views/memo_add_template.dart';
+import 'package:mapmo/features/place_search/models/geocoding_feature_model.dart';
+import 'package:mapmo/features/place_search/views/place_search_screen.dart';
+import 'package:mapmo/features/map/views/widgets/zoom_button.dart';
 
-import 'package:mapmo/service/api_constants.dart';
+import 'package:mapmo/features/common/models/place_model.dart';
+import 'package:mapmo/features/common/models/saved_maps.dart';
 
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
 
-import 'package:mapmo/features/map/widgets/current_location_button.dart';
+import 'package:mapmo/features/map/views/widgets/current_location_button.dart';
 
-import 'package:mapmo/service/geocoding_service.dart';
 import 'package:side_sheet/side_sheet.dart';
 import 'package:widget_to_marker/widget_to_marker.dart';
 
@@ -36,12 +35,12 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
-  LatLng _currentLocation = ApiConstants.myLocation;
+  LatLng _currentLocation = const LatLng(39, 49);
 
   late CameraPosition _displayPosition;
 
   late GoogleMapController _mapController;
-  GeocodingFeature? passedGeofeature;
+  GeocodingFeatureModel? passedGeofeature;
 
   PlaceModel? _placeToShowOnMarkerTap;
 
@@ -137,7 +136,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   void _onPlusTap(
-      {GeocodingFeature? geocodingFeature, LatLng? pressedPosition}) async {
+      {GeocodingFeatureModel? geocodingFeature,
+      LatLng? pressedPosition}) async {
     widget.savedMaps.currentMap.clearFilterSelection();
     PlaceModel temp = PlaceModel(name: "temporary");
     late LatLng positionToAdd;
@@ -190,7 +190,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           builder: (context, scrollController) => SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             controller: scrollController,
-            child: MemoTemplate(
+            child: MemoAddTemplate(
               savedTagsList: widget.savedMaps.currentMap.savedTagsList,
               currentLocation: positionToAdd,
               placeName: geocodingFeature?.placeName,
@@ -263,6 +263,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               setState(() {});
             },
             onLongPress: (argument) {
+              _placeToShowOnMarkerTap = null;
               _onPlusTap(pressedPosition: argument);
             },
 
@@ -419,7 +420,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               child: SafeArea(
                 child: PlaceCard(
                     placeModel: _placeToShowOnMarkerTap!,
-                    savedPlacesInfo: widget.savedMaps.currentMap),
+                    savedMapsInfo: widget.savedMaps),
               ),
             ),
         ],

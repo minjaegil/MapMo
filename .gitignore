@@ -46,4 +46,4 @@ app.*.map.json
 # API related
 /android/app/src/main/AndroidManifest.xml
 /ios/Runner/AppDelegate.swift
-/lib/service/api_constants.dart
+/lib/firebase_options.dart

@@ -1,15 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
-import 'package:mapmo/models/saved_maps.dart';
+import 'package:mapmo/features/common/models/saved_maps.dart';
 
-class DrawerScreen extends StatelessWidget {
+class DrawerScreen extends StatefulWidget {
   final SavedMaps mapsList;
 
   const DrawerScreen({
     super.key,
     required this.mapsList,
   });
+
+  @override
+  State<DrawerScreen> createState() => _DrawerScreenState();
+}
+
+class _DrawerScreenState extends State<DrawerScreen> {
+  void _onAddMapTap() async {
+    return await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: Column(
+            children: const [
+              IntrinsicHeight(
+                child: TextField(),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ButtonStyle(
+                overlayColor: MaterialStateProperty.all(Colors.transparent),
+              ),
+              child: const Text(
+                "취소",
+                style: TextStyle(
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ButtonStyle(
+                overlayColor: MaterialStateProperty.all(Colors.transparent),
+              ),
+              child: Text(
+                "추가",
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,34 +68,42 @@ class DrawerScreen extends StatelessWidget {
           horizontal: Sizes.size12,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Align(
+              alignment: Alignment.centerRight,
+              child: Icon(
+                Icons.settings_outlined,
+                size: Sizes.size24,
+              ),
+            ),
+            Gaps.v10,
+            const CircleAvatar(
+              radius: Sizes.size32,
+            ),
+            Gaps.v12,
+            const Text("기록하는 인간"),
+            Gaps.v52,
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: const [
-                Icon(
-                  Icons.person_outline_rounded,
-                  size: Sizes.size28,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "내 지도",
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: Sizes.size16,
+                  ),
                 ),
-                Gaps.h10,
-                Icon(
-                  Icons.settings_outlined,
-                  size: Sizes.size24,
+                GestureDetector(
+                  onTap: _onAddMapTap,
+                  child: const Icon(Icons.add),
                 ),
               ],
-            ),
-            const Text(
-              "Saved maps",
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: Sizes.size16,
-              ),
             ),
             Gaps.v14,
             Expanded(
               child: ListView.separated(
-                itemCount: mapsList.savedMaps.length,
+                itemCount: widget.mapsList.savedMaps.length,
                 separatorBuilder: (context, index) => const Divider(
                   height: 0.5,
                   thickness: 0.5,
@@ -55,11 +111,11 @@ class DrawerScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   return ListTile(
                     onTap: () {},
-                    selected: index == mapsList.currentIndex,
+                    selected: index == widget.mapsList.currentIndex,
                     selectedColor: Theme.of(context).primaryColor,
                     leading: const Icon(Icons.map_outlined),
                     title: Text(
-                      mapsList.savedMaps[index].mapName,
+                      widget.mapsList.savedMaps[index].mapName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

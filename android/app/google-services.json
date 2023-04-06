@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "389037413576",
+    "project_id": "project-mapmo",
+    "storage_bucket": "project-mapmo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:389037413576:android:0843212ea43df6e21d41fd",
+        "android_client_info": {
+          "package_name": "com.example.mapmo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "389037413576-hqam4hgqiir0agqg221c8au175a3j3uc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDo_BO0NIa9xVrefZQ1s7byuI--cVgvRgY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "389037413576-hqam4hgqiir0agqg221c8au175a3j3uc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "389037413576-hsb6sdj4ndspb8u1pl6q8kbclf2cma3k.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mapmo"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

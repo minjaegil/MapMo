@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
 import 'package:mapmo/features/drawer/drawer_screen.dart';
-import 'package:mapmo/common/place_card.dart';
-import 'package:mapmo/models/saved_maps.dart';
+import 'package:mapmo/features/common/views/widgets/place_card.dart';
+import 'package:mapmo/features/common/models/saved_maps.dart';
 import 'package:side_sheet/side_sheet.dart';
 
 class ListScreen extends StatelessWidget {
@@ -52,7 +52,7 @@ class ListScreen extends StatelessWidget {
           itemBuilder: (context, index) {
             return PlaceCard(
               placeModel: savedMaps.currentMap.savedPlaces[index],
-              savedPlacesInfo: savedMaps.currentMap,
+              savedMapsInfo: savedMaps,
             );
           },
         ),

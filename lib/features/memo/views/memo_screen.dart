@@ -4,24 +4,27 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
-import 'package:mapmo/models/place_model.dart';
-import 'package:mapmo/models/saved_places_model.dart';
-import 'package:mapmo/models/tag_model.dart';
+import 'package:mapmo/features/common/models/place_model.dart';
+import 'package:mapmo/features/common/models/saved_maps.dart';
+import 'package:mapmo/features/common/models/tag_model.dart';
 
-class PlaceDetailScreen extends StatefulWidget {
+class MemoScreen extends StatefulWidget {
+  static const String routeName = "placeDetails";
+  static const String routeURL = ":placeId";
+
   final PlaceModel placeInfo;
-  final SavedPlacesModel savedPlacesInfo;
-  const PlaceDetailScreen({
+  final SavedMaps savedMapsInfo;
+  const MemoScreen({
     super.key,
     required this.placeInfo,
-    required this.savedPlacesInfo,
+    required this.savedMapsInfo,
   });
 
   @override
-  State<PlaceDetailScreen> createState() => _PlaceDetailScreenState();
+  State<MemoScreen> createState() => _MemoScreenState();
 }
 
-class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
+class _MemoScreenState extends State<MemoScreen> {
   final TextEditingController _tagTextEditingController =
       TextEditingController();
   Color _selectedColor = Colors.amber;
@@ -120,7 +123,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       );
                       setState(() {
                         widget.placeInfo.tags!.add(tag);
-                        widget.savedPlacesInfo.addTag(tag, widget.placeInfo);
+                        widget.savedMapsInfo.currentMap
+                            .addTag(tag, widget.placeInfo);
                         //_chipsList = _chipsList.toSet().toList();
                         _tagTextEditingController.text = "";
                       });
@@ -148,7 +152,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       builder: (dialogContext) {
         return StatefulBuilder(builder: (stfContext, stfSetState) {
           if (widget.placeInfo.tags != null) {
-            for (var tag in widget.savedPlacesInfo.savedTagsList) {
+            for (var tag in widget.savedMapsInfo.currentMap.savedTagsList) {
               if (widget.placeInfo.tags!.contains(tag)) {
                 tag.isSelectedAsTag = true;
               } else {
@@ -177,7 +181,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   Wrap(
                     spacing: Sizes.size8,
                     children: [
-                      for (var chipData in widget.savedPlacesInfo.savedTagsList)
+                      for (var chipData
+                          in widget.savedMapsInfo.currentMap.savedTagsList)
                         FilterChip(
                           elevation: 0,
                           backgroundColor: Colors.white,
@@ -188,7 +193,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           side: BorderSide(color: chipData.color),
                           onSelected: (value) => setState(() {
                             if (chipData.isSelectedAsTag == false) {
-                              widget.savedPlacesInfo
+                              widget.savedMapsInfo.currentMap
                                   .addTag(chipData, widget.placeInfo);
                               stfSetState(() {
                                 chipData.isSelectedAsTag = true;
@@ -199,7 +204,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                 chipData.isSelectedAsTag = false;
                               });
                               widget.placeInfo.tags!.remove(chipData);
-                              widget.savedPlacesInfo
+                              widget.savedMapsInfo.currentMap
                                   .removeTag(chipData, widget.placeInfo);
                             }
                           }),
@@ -239,15 +244,22 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     //TODO: Navigator말고 다른 방법으로 페이지 이동하기 (route방법 적용하기)
     return await showDialog(
       context: context,
-      builder: (context) {
+      builder: (alertctx) {
         return AlertDialog(
           content: const Text("메모를 삭제하실건가요?"),
           actions: [
             TextButton(
               onPressed: () {
-                widget.savedPlacesInfo.remove(widget.placeInfo);
+                widget.savedMapsInfo.currentMap.remove(widget.placeInfo);
 
                 Navigator.of(context).pop();
+                //Navigator.of(context).popUntil((route) => route.isFirst);
+                /*  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (context) => const MainNavigationScreen()),
+                    (Route route) => false);
+ */
+                //alertctx.go(MainNavigationScreen.routeName);
               },
               style: ButtonStyle(
                 overlayColor: MaterialStateProperty.all(Colors.transparent),
@@ -260,7 +272,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(alertctx).pop(),
               style: ButtonStyle(
                 overlayColor: MaterialStateProperty.all(Colors.transparent),
               ),
@@ -420,7 +432,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           onDeleted: () {
                             chipData.isSelectedAsTag = false;
                             widget.placeInfo.tags!.remove(chipData);
-                            widget.savedPlacesInfo
+                            widget.savedMapsInfo.currentMap
                                 .removeTag(chipData, widget.placeInfo);
                             setState(() {});
                           },

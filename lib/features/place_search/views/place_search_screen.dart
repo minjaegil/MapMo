@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
-import 'package:mapmo/service/geocoding_service.dart';
+import 'package:mapmo/features/place_search/models/geocoding_feature_model.dart';
+import 'package:mapmo/features/place_search/view_models/place_search_vm.dart';
 
-class PlaceSearchScreen extends StatefulWidget {
+class PlaceSearchScreen extends ConsumerStatefulWidget {
   const PlaceSearchScreen({super.key});
 
   @override
-  State<PlaceSearchScreen> createState() => _PlaceSearchScreenState();
+  PlaceSearchScreenState createState() => PlaceSearchScreenState();
 }
 
-class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
+class PlaceSearchScreenState extends ConsumerState<PlaceSearchScreen> {
   final TextEditingController _textEditingController = TextEditingController();
-  List? _placeAutoCompleteSuggestions;
 
-  _loadAutoCompletePlaces(String query) async {
-    final results = await GeocodingService().getAutoCompletePlaces(query);
-    setState(() {
-      _placeAutoCompleteSuggestions = results;
-    });
-  }
-
-  void _onAutoCorrectPlaceTap(GeocodingFeature place) {
+  void _onAutoCorrectPlaceTap(GeocodingFeatureModel place) {
     Navigator.pop(context, place);
   }
 
@@ -58,8 +52,14 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
                       enableSuggestions: false,
                       autofocus: true,
                       onChanged: (value) {
-                        if (value.length > 3) _loadAutoCompletePlaces(value);
-                        setState(() {});
+                        if (value.length > 3) {
+                          //_loadAutoCompletePlaces(value);
+                          ref
+                              .read(placeSearchProvider.notifier)
+                              .getAutoCompletePlaces(value);
+                        }
+
+                        //setState(() {});
                       },
                       cursorColor: Theme.of(context).primaryColor,
                       textInputAction: TextInputAction.search,
@@ -95,30 +95,39 @@ class _PlaceSearchScreenState extends State<PlaceSearchScreen> {
             ),
             Divider(thickness: 1, height: 1, color: Colors.grey.shade400),
             //Gaps.v5,
-            if (_placeAutoCompleteSuggestions != null)
-              ListView.separated(
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  GeocodingFeature place =
-                      _placeAutoCompleteSuggestions![index];
+            ref.watch(placeSearchProvider).when(
+                  data: (data) => ListView.separated(
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      GeocodingFeatureModel place = data[index];
 
-                  int idx = place.placeName.indexOf(",");
-                  return ListTile(
-                    minLeadingWidth: Sizes.size10,
-                    leading: const Icon(Icons.place_outlined),
-                    title: idx == -1
-                        ? Text(place.placeName)
-                        : Text(place.placeName.substring(0, idx)),
-                    subtitle: idx == -1
-                        ? null
-                        : Text(place.placeName.substring(idx + 1).trim()),
-                    onTap: () => _onAutoCorrectPlaceTap(place),
-                  );
-                },
-                separatorBuilder: (context, index) => Divider(
-                    thickness: 0.5, height: 1, color: Colors.grey.shade300),
-                itemCount: _placeAutoCompleteSuggestions!.length,
-              ),
+                      int idx = place.placeName.indexOf(",");
+                      return ListTile(
+                        minLeadingWidth: Sizes.size10,
+                        leading: const Icon(Icons.place_outlined),
+                        title: idx == -1
+                            ? Text(place.placeName)
+                            : Text(place.placeName.substring(0, idx)),
+                        subtitle: idx == -1
+                            ? null
+                            : Text(place.placeName.substring(idx + 1).trim()),
+                        onTap: () => _onAutoCorrectPlaceTap(place),
+                      );
+                    },
+                    separatorBuilder: (context, index) => Divider(
+                        thickness: 0.5, height: 1, color: Colors.grey.shade300),
+                    itemCount: data.length,
+                  ),
+                  error: (error, stackTrace) => Center(
+                    child: Text(
+                      'Could not load places: $error',
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ),
+                  loading: () => const Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  ),
+                ),
           ],
         ),
       ),

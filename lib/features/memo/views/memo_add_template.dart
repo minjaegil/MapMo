@@ -9,17 +9,17 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:mapmo/constants/gaps.dart';
 import 'package:mapmo/constants/sizes.dart';
-import 'package:mapmo/models/place_model.dart';
+import 'package:mapmo/features/memo/views/widgets/add_image_button.dart';
+import 'package:mapmo/features/common/models/place_model.dart';
 
-import 'package:mapmo/models/tag_model.dart';
-import 'package:mapmo/features/memo/widgets/add_image_button.dart';
+import 'package:mapmo/features/common/models/tag_model.dart';
 
-class MemoTemplate extends StatefulWidget {
+class MemoAddTemplate extends StatefulWidget {
   final List<TagModel> savedTagsList;
   final LatLng currentLocation;
   final String? placeName;
 
-  const MemoTemplate({
+  const MemoAddTemplate({
     super.key,
     required this.savedTagsList,
     required this.currentLocation,
@@ -27,10 +27,10 @@ class MemoTemplate extends StatefulWidget {
   });
 
   @override
-  State<MemoTemplate> createState() => _MemoTemplateState();
+  State<MemoAddTemplate> createState() => _MemoAddTemplateState();
 }
 
-class _MemoTemplateState extends State<MemoTemplate> {
+class _MemoAddTemplateState extends State<MemoAddTemplate> {
   //SavedTagsModel _allChipsList = SavedTagsModel();
   final List<TagModel> _chipsList = [];
 
